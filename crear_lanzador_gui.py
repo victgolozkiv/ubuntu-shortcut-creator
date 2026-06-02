@@ -1,56 +1,24 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
-import stat
+import sys
 
-def create_launcher(name, exec_path, icon_path=None, work_dir=None):
-    desktop_dir = os.path.expanduser("~/Escritorio")
-    if not os.path.exists(desktop_dir):
-        desktop_dir = os.path.expanduser("~/Desktop")
-    
-    file_path = os.path.join(desktop_dir, f"{name.replace(' ', '_')}.desktop")
-    
-    content = [
-        "[Desktop Entry]",
-        "Version=1.0",
-        f"Name={name}",
-        f"Exec={exec_path}",
-        "Terminal=false",
-        "Type=Application",
-        "Categories=Development;"
-    ]
-    
-    if icon_path and icon_path.strip():
-        content.append(f"Icon={os.path.abspath(icon_path)}")
-    
-    if work_dir and work_dir.strip():
-        content.append(f"Path={os.path.abspath(work_dir)}")
-    
-    try:
-        with open(file_path, "w") as f:
-            f.write("\n".join(content))
-
-        st = os.stat(file_path)
-        os.chmod(file_path, st.st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
-
-        # Mark as trusted (Allow Launching) automatically
-        os.system(f'gio set -t string "{file_path}" metadata::trusted true')
-
-        return True, file_path
-    except Exception as e:
-        return False, str(e)
+# Import the engine from the sibling file
+sys.path.append(os.path.dirname(__file__))
+from crear_lanzador import create_launcher
 
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Creador de Accesos Directos")
-        self.root.geometry("500x450")
+        self.root.title("Creador de Accesos Directos 2.0")
+        self.root.geometry("500x520")
         self.root.configure(bg="#2d2d2d")
         
         style = ttk.Style()
         style.theme_use('clam')
         style.configure("TLabel", foreground="white", background="#2d2d2d", font=("Segoe UI", 10))
         style.configure("TButton", font=("Segoe UI", 10))
+        style.configure("TCheckbutton", foreground="white", background="#2d2d2d", font=("Segoe UI", 10))
         
         container = tk.Frame(root, bg="#2d2d2d", padx=20, pady=20)
         container.pack(fill="both", expand=True)
@@ -79,10 +47,16 @@ class App:
         # Work Dir
         ttk.Label(container, text="Directorio de Trabajo (Opcional):").pack(anchor="w", pady=(0, 5))
         dir_frame = tk.Frame(container, bg="#2d2d2d")
-        dir_frame.pack(fill="x", pady=(0, 20))
+        dir_frame.pack(fill="x", pady=(0, 15))
         self.dir_ent = ttk.Entry(dir_frame)
         self.dir_ent.pack(side="left", fill="x", expand=True)
         ttk.Button(dir_frame, text="...", width=3, command=self.browse_dir).pack(side="right", padx=(5, 0))
+        
+        # Terminal Option
+        self.term_var = tk.BooleanVar(value=False)
+        self.term_chk = ttk.Checkbutton(container, text="¿Abrir en Terminal? (Necesario para scripts de consola)", 
+                                        variable=self.term_var)
+        self.term_chk.pack(anchor="w", pady=(0, 20))
         
         # Create Button
         self.create_btn = tk.Button(container, text="CREAR ACCESO DIRECTO", 
@@ -107,16 +81,17 @@ class App:
         cmd = self.cmd_ent.get()
         icon = self.icon_ent.get()
         wdir = self.dir_ent.get()
+        term = self.term_var.get()
         
         if not name or not cmd:
             messagebox.showerror("Error", "Nombre y Comando son obligatorios.")
             return
             
-        success, res = create_launcher(name, cmd, icon, wdir)
-        if success:
-            messagebox.showinfo("Éxito", f"Acceso directo creado en el Escritorio:\n{res}\n\nNo olvides darle a 'Permitir lanzar' al abrirlo por primera vez.")
-        else:
-            messagebox.showerror("Error", f"No se pudo crear: {res}")
+        try:
+            create_launcher(name, cmd, icon, wdir, term)
+            messagebox.showinfo("Éxito", f"Acceso directo '{name}' creado en el Escritorio.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo crear: {e}")
 
 if __name__ == "__main__":
     root = tk.Tk()
