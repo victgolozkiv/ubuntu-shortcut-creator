@@ -49,3 +49,10 @@ python3 crear_lanzador.py "Nombre" "Comando" "Ruta/Icono" "Directorio/Trabajo"
 
 ---
 Creado por [victgolozkiv](https://github.com/victgolozkiv)
+
+## ❤️ Apoya el Proyecto
+
+Si esta herramienta te ha sido útil, ¡considera invitarme a un café! Tu apoyo ayuda a seguir mejorando este y otros proyectos de código abierto.
+
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/VictorRicardo162/1)
+
